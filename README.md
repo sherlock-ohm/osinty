@@ -13,4 +13,4 @@ Edit setup.sh and add any API Keys that you have.
 cd osinty
 # Edit setup.sh and add any API Keys that you have.
 chmod +x setup.sh
-./setup.sh```
+./setup.sh
