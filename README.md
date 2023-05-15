@@ -14,3 +14,6 @@ cd osinty
 # Edit setup.sh and add any API Keys that you have.
 chmod +x setup.sh
 ./setup.sh
+
+# Usage
+```osinty <domain name>
