@@ -59,4 +59,5 @@ echo 'apikeys:
 sudo chmod +x osinty
 sudo cp osinty /opt
 sudo chown kali:kali /opt/osinty
+export PATH=$PATH:/opt
 echo "export PATH=$PATH:/opt" >> ~/.zshrc
