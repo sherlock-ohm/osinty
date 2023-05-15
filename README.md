@@ -16,6 +16,7 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
-# Usage
-```osinty <domain name>
+## Usage
+```
+osinty <domain name>
 ```
