@@ -1,0 +1,34 @@
+#!/bin/zsh
+
+echo "\n\n"
+echo "knockknock"
+knockknock -n $1 -p
+echo "\n\n"
+echo "haktrails subdomains"
+cat domains.txt | haktrails subdomains | tee -a subdomains.txt
+echo "\n\n"
+echo "theHarvester"
+for DOMAIN in $(cat domains.txt); do echo "$DOMAIN \n"; theHarvester -d $DOMAIN -b anubis,baidu,censys,certspotter,crtsh,dnsdumpster,duckduckgo,hackertarget,hunter,omnisint,otx,qwant,rapiddns,securityTrails,sublist3r,threatcrowd,threatminer,urlscan,virustotal,yahoo | tee -a theHarvester.$DOMAIN.txt; done
+grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' theHarvester* | sort -u > possible_ips_unreliable.txt
+echo "\n\n"
+echo "whois"
+for DOMAIN in $(cat domains.txt); do echo "$DOMAIN \n"; whois $DOMAIN | tee -a whois.$DOMAIN.txt &; done
+echo "\n\n"
+echo "testssl"
+for DOMAIN in $(cat domains.txt); do echo "$DOMAIN \n"; testssl --connect-timeout 5 --openssl-timeout 10 --warnings off $i | grep -i 'cve' | grep -Eiv 'potential|not vulnerable|no HTTP compression|experimental|no RC4 ciphers' | sort -u | tee -a testssl.$DOMAIN.txt &; done
+echo "\n\n"
+echo "gowitness"
+gowitness file -f domains.txt &
+gowitness file -f subdomains.txt &
+for IP in $(cat possible_ips_unreliable.txt); do gowitness single http://$IP &; done
+for IP in $(cat possible_ips_unreliable.txt); do gowitness single https://$IP &; done
+for DOMAIN in $(cat domains.txt); do gowitness single https://dnsdumpster.com/static/map/$DOMAIN.png &; done
+echo "\n\n"
+echo "smap everthing\!"
+cat domains.txt subdomains.txt possible_ips_unreliable.txt | sort -u > toSmap.txt
+smap -iL toSmap.txt -oG smap.txt && rm toSmap.txt &
+echo "\n\n"
+echo "cloud enum"
+for DOMAIN in $(cat domains.txt); do cloud_enum -k $DOMAIN -k $(echo "$DOMAIN" | cut -d "." -f 1) | grep -v "Timeout" | tee -a cloud_enum.$DOMAIN.txt &; done
+echo "\n\n"
+echo "Now make sure you manually go through everything and check shodan and criminalip."
