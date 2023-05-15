@@ -1,7 +1,7 @@
 # osinty
 Just a handy (not comprehensive) script to do a bunch of osint for you quickly
 
-This was tested to be working on the kali 2023.1 - 15.05.2021
+This was tested to be working on the kali 2023.1 - 15.05.2023
 
 Feel free to fork or suggest any additions/changes
 
