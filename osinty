@@ -7,6 +7,9 @@ echo "\n\n"
 echo "haktrails subdomains"
 cat domains.txt | haktrails subdomains | tee -a subdomains.txt
 echo "\n\n"
+echo "wafme0w subdomains"
+for SUBDOMAIN in $(cat subdomains.txt); do wafme0w -t $SUBDOMAIN | tee -a wafme0w.$SUBDOMAIN.txt; done
+echo "\n\n"
 echo "theHarvester"
 for DOMAIN in $(cat domains.txt); do echo "$DOMAIN \n"; theHarvester -d $DOMAIN -b anubis,baidu,censys,certspotter,crtsh,dnsdumpster,duckduckgo,hackertarget,hunter,omnisint,otx,qwant,rapiddns,securityTrails,sublist3r,threatcrowd,threatminer,urlscan,virustotal,yahoo | tee -a theHarvester.$DOMAIN.txt; done
 grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' theHarvester* | sort -u > possible_ips_unreliable.txt
