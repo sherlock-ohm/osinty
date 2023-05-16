@@ -6,6 +6,7 @@ sudo apt install cloud-enum -y
 go install github.com/harleo/knockknock@latest
 go install github.com/sensepost/gowitness@latest
 go install -v github.com/s0md3v/smap/cmd/smap@latest
+go install -v github.com/Lu1sDV/wafme0w/cmd/wafme0w@latest
 go install -v github.com/hakluke/haktrails@latest
 echo "alias haktrails=~/go/bin/haktrails" >> ~/.zshrc
 mkdir ~/.config/haktools
