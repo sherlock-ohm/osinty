@@ -41,7 +41,7 @@ echo "\n\n"
 echo "cloud enum"
 mkdir cloud_enum && for DOMAIN in $(cat domains.txt); do cloud_enum -k $DOMAIN -k $(echo "$DOMAIN" | cut -d "." -f 1) | grep -Eiv "Timeout|error|complete" | tee -a cloud_enum/cloud_enum.$DOMAIN.txt &; done
 echo "\n\n"
-while jobs %% > /dev/null; do sleep 2; done
+while [ $(jobs | wc -l) -gt 0 ]; do sleep 2; done
 echo 'osinty complete. Happy hacking!'
 echo "\n"
 echo "Now make sure you manually go through everything and check shodan and criminalip." 
