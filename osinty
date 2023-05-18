@@ -4,16 +4,21 @@ echo "\n\n"
 echo "knockknock"
 knockknock -n $1 -p
 echo "$1" >> domains.txt
+sort -u domains.txt > domains2.txt
+mv domains2.txt domains.txt
+cp domains.txt subdomains.txt
 echo "\n\n"
 echo "haktrails subdomains"
 cat domains.txt | haktrails subdomains | tee -a subdomains.txt
 echo "\n\n"
-echo "wafme0w subdomains"
-mkdir wafme0w && for DOMAIN in $(cat subdomains.txt); do wafme0w -t $DOMAIN | tee -a wafme0w/wafme0w.$DOMAIN.txt; done
-echo "\n\n"
 echo "theHarvester"
 mkdir theHarvester && for DOMAIN in $(cat domains.txt); do echo "$DOMAIN \n"; theHarvester -d $DOMAIN -b anubis,baidu,censys,certspotter,crtsh,dnsdumpster,duckduckgo,hackertarget,hunter,omnisint,otx,qwant,rapiddns,securityTrails,sublist3r,threatcrowd,threatminer,urlscan,virustotal,yahoo | tee -a theHarvester/theHarvester.$DOMAIN.txt; done
 grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' theHarvester/theHarvester* | sort -u > possible_ips_unreliable.txt
+sort -u subdomain.txt subdomains2.txt
+mv subdomain2.txt subdomains.txt
+echo "\n\n"
+echo "wafme0w subdomains"
+mkdir wafme0w && for SUBDOMAIN in $(cat subdomains.txt); do wafme0w -t $SUBDOMAIN | tee -a wafme0w/wafme0w.$SUBDOMAIN.txt; done
 echo "\n\n"
 echo "whois"
 mkdir whois && for DOMAIN in $(cat domains.txt); do echo "$DOMAIN \n"; whois $DOMAIN | tee -a whois/whois.$DOMAIN.txt &; done
@@ -28,11 +33,14 @@ for IP in $(cat possible_ips_unreliable.txt); do gowitness single http://$IP &; 
 for IP in $(cat possible_ips_unreliable.txt); do gowitness single https://$IP &; done
 for DOMAIN in $(cat domains.txt); do gowitness single https://dnsdumpster.com/static/map/$DOMAIN.png -P . -X 2560 -Y 1440 &; done
 echo "\n\n"
-echo "smap everthing\!"
+echo 'smap everthing!'
 cat domains.txt subdomains.txt possible_ips_unreliable.txt | sort -u > toSmap.txt
 smap -iL toSmap.txt -oG smap.txt && rm toSmap.txt &
 echo "\n\n"
 echo "cloud enum"
 mkdir cloud_enum && for DOMAIN in $(cat domains.txt); do cloud_enum -k $DOMAIN -k $(echo "$DOMAIN" | cut -d "." -f 1) | grep -Eiv "Timeout|error|complete" | tee -a cloud_enum/cloud_enum.$DOMAIN.txt &; done
 echo "\n\n"
-echo "Now make sure you manually go through everything and check shodan and criminalip."
+while jobs %% > /dev/null; do sleep 2; done
+echo 'osinty complete. Happy hacking!'
+echo "\n"
+echo "Now make sure you manually go through everything and check shodan and criminalip." 
