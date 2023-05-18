@@ -26,8 +26,7 @@ gowitness file -f domains.txt &
 gowitness file -f subdomains.txt &
 for IP in $(cat possible_ips_unreliable.txt); do gowitness single http://$IP &; done
 for IP in $(cat possible_ips_unreliable.txt); do gowitness single https://$IP &; done
-for DOMAIN in $(cat domains.txt); do gowitness single https://dnsdumpster.com/static/map/$DOMAIN.png &; done
-sleep 15 && mv screenshots/*dnsdumpster* ..
+for DOMAIN in $(cat domains.txt); do gowitness single https://dnsdumpster.com/static/map/$DOMAIN.png -P . -X 2560 -Y 1440 &; done
 echo "\n\n"
 echo "smap everthing\!"
 cat domains.txt subdomains.txt possible_ips_unreliable.txt | sort -u > toSmap.txt
