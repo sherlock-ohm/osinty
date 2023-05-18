@@ -1,5 +1,6 @@
 #!/bin/zsh
 
+set -eo pipefail
 echo "\n\n"
 echo "knockknock"
 knockknock -n $1 -p
@@ -7,6 +8,7 @@ echo "$1" >> domains.txt
 sort -u domains.txt > domains2.txt
 mv domains2.txt domains.txt
 cp domains.txt subdomains.txt
+mkdir dnsrecon && for DOMAIN in $(cat domains.txt); do dnsrecon -d $DOMAIN -D /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -t brt | awk '{ print $3 }' | grep "$DOMAIN" | sort -u > dnsrecon/dnsrecon.$DOMAIN.txt &; done
 echo "\n\n"
 echo "haktrails subdomains"
 cat domains.txt | haktrails subdomains | tee -a subdomains.txt
@@ -45,3 +47,4 @@ while [ $(jobs | wc -l) -gt 0 ]; do sleep 2; done
 echo 'osinty complete. Happy hacking!'
 echo "\n"
 echo "Now make sure you manually go through everything and check shodan and criminalip." 
+echo "Check the subdomains in dnsrecon to see how they compare to subdomains.txt and see if there is any more work to do"  
