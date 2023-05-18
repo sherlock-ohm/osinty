@@ -14,11 +14,12 @@ echo "\n\n"
 echo "theHarvester"
 mkdir theHarvester && for DOMAIN in $(cat domains.txt); do echo "$DOMAIN \n"; theHarvester -d $DOMAIN -b anubis,baidu,censys,certspotter,crtsh,dnsdumpster,duckduckgo,hackertarget,hunter,omnisint,otx,qwant,rapiddns,securityTrails,sublist3r,threatcrowd,threatminer,urlscan,virustotal,yahoo | tee -a theHarvester/theHarvester.$DOMAIN.txt; done
 grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' theHarvester/theHarvester* | sort -u > possible_ips_unreliable.txt
-sort -u subdomain.txt subdomains2.txt
-mv subdomain2.txt subdomains.txt
+for i in $(ls -1 theHarvester); do cat theHarvester/$i | cut -d ":" -f 1 | awk '/---------------------/ {p=1; next} p' >> subdomains.txt; done
+sort -u subdomains.txt > subdomains2.txt
+mv subdomains2.txt subdomains.txt
 echo "\n\n"
 echo "wafme0w subdomains"
-mkdir wafme0w && for SUBDOMAIN in $(cat subdomains.txt); do wafme0w -t $SUBDOMAIN | tee -a wafme0w/wafme0w.$SUBDOMAIN.txt; done
+mkdir wafme0w && for SUBDOMAIN in $(cat subdomains.txt); do wafme0w -t $SUBDOMAIN | grep "$SUBDOMAIN" | grep -vi "error" | tee -a wafme0w/wafme0w.$SUBDOMAIN.txt; done
 echo "\n\n"
 echo "whois"
 mkdir whois && for DOMAIN in $(cat domains.txt); do echo "$DOMAIN \n"; whois $DOMAIN | tee -a whois/whois.$DOMAIN.txt &; done
