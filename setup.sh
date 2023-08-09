@@ -1,5 +1,6 @@
 #!/bin/zsh
 sudo apt update
+shodan init <API KEY>
 sudo apt install golang -y
 sudo apt install testssl.sh -y
 sudo apt install cloud-enum -y
@@ -8,9 +9,11 @@ go install github.com/sensepost/gowitness@latest
 go install -v github.com/s0md3v/smap/cmd/smap@latest
 go install -v github.com/Lu1sDV/wafme0w/cmd/wafme0w@latest
 go install -v github.com/hakluke/haktrails@latest
+echo "export PATH=$PATH:/opt" >> ~/.zshrc
 echo "alias haktrails=~/go/bin/haktrails" >> ~/.zshrc
+source ~/.zshrc
 mkdir ~/.config/haktools
-echo "securitytrails:\n  key: <insert API Key here>" > ~/.config/haktools/haktrails-config.yml
+echo "securitytrails:\n  key: <API KEY>" > ~/.config/haktools/haktrails-config.yml
 echo 'apikeys:
   bevigil:
    key:
@@ -22,8 +25,8 @@ echo 'apikeys:
     key:
 
   censys:
-    id:
-    secret:
+    id:<API KEY>
+    secret:<API KEY>
 
   fullhunt:
     key:
@@ -32,10 +35,10 @@ echo 'apikeys:
     key:
 
   hunter:
-    key:
+    key:<API KEY>
 
   intelx:
-    key:
+    key:<API KEY>
 
   pentestTools:
     key:
@@ -47,18 +50,13 @@ echo 'apikeys:
     key:
 
   securityTrails:
-    key:
+    key:<API KEY>
 
   shodan:
-    key:
+    key:<API KEY>
 
   virustotal:
-    key:
+    key:<API KEY>
 
   zoomeye:
-    key:' | sudo tee /etc/theHarvester/api-keys.yaml    
-sudo chmod +x osinty
-sudo cp osinty /opt
-sudo chown kali:kali /opt/osinty
-export PATH=$PATH:/opt
-echo "export PATH=$PATH:/opt" >> ~/.zshrc
+    key:' | sudo tee /etc/theHarvester/api-keys.yaml
