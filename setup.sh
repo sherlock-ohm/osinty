@@ -14,49 +14,4 @@ echo "alias haktrails=~/go/bin/haktrails" >> ~/.zshrc
 source ~/.zshrc
 mkdir ~/.config/haktools
 echo "securitytrails:\n  key: <API KEY>" > ~/.config/haktools/haktrails-config.yml
-echo 'apikeys:
-  bevigil:
-   key:
 
-  binaryedge:
-    key:
-
-  bing:
-    key:
-
-  censys:
-    id:<API KEY>
-    secret:<API KEY>
-
-  fullhunt:
-    key:
-
-  github:
-    key:
-
-  hunter:
-    key:<API KEY>
-
-  intelx:
-    key:<API KEY>
-
-  pentestTools:
-    key:
-
-  projectDiscovery:
-    key:
-
-  rocketreach:
-    key:
-
-  securityTrails:
-    key:<API KEY>
-
-  shodan:
-    key:<API KEY>
-
-  virustotal:
-    key:<API KEY>
-
-  zoomeye:
-    key:' | sudo tee /etc/theHarvester/api-keys.yaml
