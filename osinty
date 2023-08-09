@@ -1,50 +1,58 @@
 #!/bin/zsh
 
-set -eo pipefail
-echo "\n\n"
 echo "knockknock"
+# Find a list of domains owned by person or company via reverse whois
 knockknock -n $1 -p
 echo "$1" >> domains.txt
 sort -u domains.txt > domains2.txt
 mv domains2.txt domains.txt
 cp domains.txt subdomains.txt
-mkdir dnsrecon && for DOMAIN in $(cat domains.txt); do dnsrecon -d $DOMAIN -D /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -t brt | awk '{ print $3 }' | grep "$DOMAIN" | sort -u > dnsrecon/dnsrecon.$DOMAIN.txt &; done
-echo "\n\n"
+mkdir dnsrecon && for DOMAIN in $(cat domains.txt); do dnsrecon -d $DOMAIN -D /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -t brt | awk '{ print $3 }' | grep "$DOMAIN" | sort -u > dnsrecon/$DOMAIN.txt &; done
+# Search for subdomains via bruteforce
+# echo "\n\n"
 echo "haktrails subdomains"
+# Search for subdomains from securitytrails
 cat domains.txt | haktrails subdomains | tee -a subdomains.txt
 echo "\n\n"
-echo "theHarvester"
-mkdir theHarvester && for DOMAIN in $(cat domains.txt); do echo "$DOMAIN \n"; theHarvester -d $DOMAIN -b anubis,baidu,censys,certspotter,crtsh,dnsdumpster,duckduckgo,hackertarget,hunter,omnisint,otx,qwant,rapiddns,securityTrails,sublist3r,threatcrowd,threatminer,urlscan,virustotal,yahoo | tee -a theHarvester/theHarvester.$DOMAIN.txt; done
-grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' theHarvester/theHarvester* | sort -u > possible_ips_unreliable.txt
-for i in $(ls -1 theHarvester); do cat theHarvester/$i | cut -d ":" -f 1 | awk '/---------------------/ {p=1; next} p' >> subdomains.txt; done
 sort -u subdomains.txt > subdomains2.txt
 mv subdomains2.txt subdomains.txt
 echo "\n\n"
 echo "wafme0w subdomains"
-mkdir wafme0w && for SUBDOMAIN in $(cat subdomains.txt); do wafme0w -t $SUBDOMAIN | grep "$SUBDOMAIN" | grep -vi "error" | tee -a wafme0w/wafme0w.$SUBDOMAIN.txt; done
+# Find out if there is a WAF on any subdomains using wafme0w
+mkdir wafme0w && for SUBDOMAIN in $(cat subdomains.txt); do wafme0w -t $SUBDOMAIN | grep "$SUBDOMAIN" | grep -vi "error" | tee -a wafme0w/$SUBDOMAIN.txt; done
 echo "\n\n"
 echo "whois"
-mkdir whois && for DOMAIN in $(cat domains.txt); do echo "$DOMAIN \n"; whois $DOMAIN | tee -a whois/whois.$DOMAIN.txt &; done
+# Do a whois lookup on domains
+mkdir whois && for DOMAIN in $(cat domains.txt); do echo "$DOMAIN \n"; whois $DOMAIN | tee -a whois/$DOMAIN.txt &; done
 echo "\n\n"
 echo "testssl"
-mkdir testssl && for DOMAIN in $(cat domains.txt); do echo "$DOMAIN \n"; testssl --connect-timeout 5 --openssl-timeout 10 --warnings off $i | grep -i 'cve' | grep -Eiv 'potential|not vulnerable|no HTTP compression|experimental|no RC4 ciphers' | sort -u | tee -a testssl/testssl.$DOMAIN.txt &; done
+# Check ssl for CVE using ssltest and grep out the juicy stuff
+mkdir testssl && for DOMAIN in $(cat domains.txt); do echo "$DOMAIN \n"; testssl --connect-timeout 5 --openssl-timeout 10 --warnings off $i | grep -i 'cve' | grep -Eiv 'potential|not vulnerable|no HTTP compression|experimental|no RC4 ciphers' | sort -u | tee -a testssl/$DOMAIN.txt &; done
 echo "\n\n"
 echo "gowitness"
+# Take screenshots of all IPs and subdomains on port 80 and 443 using gowitness
 gowitness file -f domains.txt &
 gowitness file -f subdomains.txt &
 for IP in $(cat possible_ips_unreliable.txt); do gowitness single http://$IP &; done
 for IP in $(cat possible_ips_unreliable.txt); do gowitness single https://$IP &; done
-for DOMAIN in $(cat domains.txt); do gowitness single https://dnsdumpster.com/static/map/$DOMAIN.png -P . -X 2560 -Y 1440 &; done
+for DOMAIN in $(cat domains.txt); do wget https://dnsdumpster.com/static/map/$DOMAIN.png &; done
+echo "\n\n"
+# Get IPs from all subdomains and domains
+mkdir IPs; for SUBDOMAIN in $(cat subdomains.txt); do shodan search Ssl.cert.subject.CN:"$SUBDOMAIN" --fields ip_str > IPs/$SUBDOMAIN.txt &; done
+for DOMAIN in $(cat domains.txt); do sleep 2; shodan search Ssl.cert.subject.CN:"$DOMAIN" --fields ip_str > IPs/$DOMAIN.txt &; done
 echo "\n\n"
 echo 'smap everthing!'
-cat domains.txt subdomains.txt possible_ips_unreliable.txt | sort -u > toSmap.txt
+# Gather some quick shodan data (not comprehensive) using smap (passive)
+cat domains.txt subdomains.txt IPs/* | sort -u > toSmap.txt
 smap -iL toSmap.txt -oG smap.txt && rm toSmap.txt &
 echo "\n\n"
 echo "cloud enum"
-mkdir cloud_enum && for DOMAIN in $(cat domains.txt); do cloud_enum -k $DOMAIN -k $(echo "$DOMAIN" | cut -d "." -f 1) | grep -Eiv "Timeout|error|complete" | tee -a cloud_enum/cloud_enum.$DOMAIN.txt &; done
+# Enumerate cloud misconfigurations using cloud_enum
+mkdir cloud_enum && for DOMAIN in $(cat domains.txt); do cloud_enum -k $DOMAIN -k $(echo "$DOMAIN" | cut -d "." -f 1) | grep -Eiv "Timeout|error|complete" | tee -a cloud_enum/$DOMAIN.txt &; done
 echo "\n\n"
 while [ $(jobs | wc -l) -gt 0 ]; do sleep 2; done
+grep -vE '^.{,50}$' darkweb/* | grep -Eiorh '([[:alnum:]_.-]+@[[:alnum:]_.-]+?\.[[:alpha:].]{2,6})' "$@" >> email_addresses.txt
 echo 'osinty complete. Happy hacking!'
 echo "\n"
-echo "Now make sure you manually go through everything and check shodan and criminalip." 
-echo "Check the subdomains in dnsrecon to see how they compare to subdomains.txt and see if there is any more work to do"  
+echo "Now make sure you manually go through everything and check shodan and criminalip."
+echo "Check the subdomains in dnsrecon to see how they compare to subdomains.txt and see if there is any more work to do"
